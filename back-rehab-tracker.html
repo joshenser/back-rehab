@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Back Rehab">
+<title>Back Rehab</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-dark: #0F6E56;
+    --green-light: #E1F5EE;
+    --green-mid: #9FE1CB;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --red: #993C1D;
+    --red-light: #FAECE7;
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2128;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #484f58;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior: none;
+  }
+
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 0 16px 100px;
+  }
+
+  /* Header */
+  .header {
+    padding: calc(env(safe-area-inset-top) + 20px) 0 16px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .app-title {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .app-subtitle {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  .streak-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-radius: 99px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+  }
+
+  .streak-badge .flame { color: #ef9f27; font-size: 14px; }
+
+  /* Week strip */
+  .week-strip {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .day-pill {
+    flex: 1;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 4px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .day-pill.today {
+    border-color: var(--green);
+    background: rgba(29, 158, 117, 0.12);
+  }
+
+  .day-pill.completed-day {
+    border-color: var(--green-dark);
+    background: rgba(29, 158, 117, 0.08);
+  }
+
+  .day-pill .day-num {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .day-pill .day-name {
+    display: block;
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .day-pill.today .day-num { color: var(--green); }
+  .day-pill.today .day-name { color: var(--green-dark); }
+
+  .day-dot {
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--green);
+    margin: 4px auto 0;
+  }
+
+  /* Progress */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* Section labels */
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin: 24px 0 10px;
+  }
+
+  /* Exercise cards */
+  .ex-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color 0.25s;
+  }
+
+  .ex-card.done {
+    border-color: var(--green-dark);
+    background: rgba(15, 110, 86, 0.12);
+  }
+
+  .ex-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .check-ring {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: transparent;
+  }
+
+  .done .check-ring {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .check-ring svg { display: none; }
+  .done .check-ring svg { display: block; }
+
+  .ex-text { flex: 1; min-width: 0; }
+
+  .ex-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .done .ex-name { color: var(--green); }
+
+  .ex-meta {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  .ex-tag {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+
+  .ex-tag.physio {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--green);
+    border: 0.5px solid rgba(29, 158, 117, 0.3);
+  }
+
+  .ex-tag.bonus {
+    background: var(--bg3);
+    color: var(--text3);
+    border: 0.5px solid var(--border);
+  }
+
+  .chevron {
+    color: var(--text3);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .chevron.open { transform: rotate(180deg); }
+
+  /* Expanded body */
+  .ex-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+
+  .ex-body.open { max-height: 800px; }
+
+  .ex-inner {
+    padding: 0 16px 16px;
+    border-top: 0.5px solid var(--border);
+  }
+
+  /* GIF */
+  .gif-wrap {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin: 14px 0 12px;
+    position: relative;
+  }
+
+  .gif-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .gif-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    display: none;
+  }
+
+  .gif-fallback svg { opacity: 0.25; }
+  .gif-fallback p { font-size: 12px; color: var(--text3); }
+
+  .ex-aim {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.65;
+    margin-bottom: 12px;
+  }
+
+  .ex-progression {
+    background: rgba(29, 158, 117, 0.1);
+    border: 0.5px solid rgba(29, 158, 117, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--green);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .ex-progression::before {
+    content: 'Progression  ';
+    font-weight: 500;
+  }
+
+  /* Sets */
+  .sets-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .sets-label {
+    font-size: 12px;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+
+  .set-dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  .set-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .set-dot.tapped {
+    background: rgba(29, 158, 117, 0.2);
+    border-color: var(--green);
+  }
+
+  .set-dot.tapped::after {
+    content: '';
+    display: block;
+    width: 10px;
+    height: 10px;
+    background: var(--green);
+    border-radius: 50%;
+  }
+
+  .mark-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--green-dark);
+    background: transparent;
+    color: var(--green);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .mark-btn:active { background: var(--green-dark); color: #fff; transform: scale(0.98); }
+  .done .mark-btn { background: var(--green-dark); color: #fff; border-color: var(--green-dark); }
+
+  /* Pain scale */
+  .pain-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 24px;
+  }
+
+  .pain-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .pain-scale {
+    display: flex;
+    gap: 5px;
+  }
+
+  .pain-btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: var(--bg3);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .pain-btn.sel-ok { background: rgba(29,158,117,0.15); border-color: var(--green); color: var(--green); }
+  .pain-btn.sel-warn { background: rgba(186,117,23,0.15); border-color: var(--amber); color: var(--amber); }
+  .pain-btn.sel-bad { background: rgba(153,60,29,0.15); border-color: var(--red); color: #f0997b; }
+
+  .pain-note {
+    margin-top: 10px;
+    font-size: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    line-height: 1.6;
+    display: none;
+  }
+
+  .pain-note.ok { display: block; background: rgba(29,158,117,0.1); color: var(--green); }
+  .pain-note.warn { display: block; background: rgba(186,117,23,0.1); color: var(--amber); }
+  .pain-note.bad { display: block; background: rgba(153,60,29,0.1); color: #f0997b; }
+
+  /* Guidance */
+  .guidance-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 12px;
+  }
+
+  .guidance-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .guidance-list {
+    list-style: none;
+  }
+
+  .guidance-list li {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 5px 0;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .guidance-list li:last-child { border-bottom: none; }
+
+  .guidance-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 5px;
+    height: 5px;
+    background: var(--green-dark);
+    border-radius: 50%;
+  }
+
+  /* Complete banner */
+  .complete-banner {
+    background: rgba(15, 110, 86, 0.15);
+    border: 0.5px solid var(--green-dark);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+    display: none;
+  }
+
+  .complete-banner.show { display: block; }
+
+  .complete-banner h2 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+
+  .complete-banner p {
+    font-size: 13px;
+    color: var(--green-dark);
+  }
+
+  /* History log */
+  .history-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 12px;
+    margin-bottom: 40px;
+  }
+
+  .history-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .history-empty {
+    font-size: 13px;
+    color: var(--text3);
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+  }
+
+  .history-row:last-child { border-bottom: none; }
+  .history-date { color: var(--text2); }
+  .history-detail { color: var(--text3); font-family: 'DM Mono', monospace; font-size: 11px; }
+  .history-pain { font-size: 11px; padding: 2px 7px; border-radius: 99px; }
+  .history-pain.ok { background: rgba(29,158,117,0.15); color: var(--green); }
+  .history-pain.warn { background: rgba(186,117,23,0.15); color: var(--amber); }
+  .history-pain.bad { background: rgba(153,60,29,0.15); color: #f0997b; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="app-title">Back rehab</div>
+        <div class="app-subtitle">T12/L1 recovery · 3× per week</div>
+      </div>
+      <div class="streak-badge">
+        <span class="flame">&#9733;</span>
+        <span id="streakCount">0</span> week streak
+      </div>
+    </div>
+  </div>
+
+  <div class="week-strip" id="weekStrip"></div>
+
+  <div class="progress-row">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0%</div>
+  </div>
+
+  <div class="section-label">Physio programme</div>
+  <div id="physioList"></div>
+
+  <div class="section-label">Bonus stretches &amp; mobility</div>
+  <div id="bonusList"></div>
+
+  <div class="pain-card">
+    <div class="pain-title">How did that feel? Pain level</div>
+    <div class="pain-scale" id="painScale"></div>
+    <div class="pain-note" id="painNote"></div>
+  </div>
+
+  <div class="complete-banner" id="completeBanner">
+    <h2>Session complete ✓</h2>
+    <p>Great work. Rest up and come back in a day or two.</p>
+  </div>
+
+  <div class="guidance-card">
+    <div class="guidance-title">Physio guidance</div>
+    <ul class="guidance-list">
+      <li>Aim to complete these 3× per week</li>
+      <li>Keep movements slow and controlled throughout</li>
+      <li>Pain should stay at or below 4/10 — not sharp or worsening after</li>
+      <li>It's normal to feel muscles working, not pain on the spine</li>
+      <li>If anything significantly aggravates symptoms, stop and let your physio know</li>
+    </ul>
+  </div>
+
+  <div class="section-label">Session history</div>
+  <div class="history-card">
+    <div id="historyList"><div class="history-empty">No sessions logged yet</div></div>
+  </div>
+
+</div>
+
+<script>
+const EXERCISES = [
+  {
+    id: 'bird-dog',
+    name: 'Bird dog',
+    sets: 3, reps: '10 each side',
+    tag: 'physio',
+    aim: 'Improves core stability and control through the spine, reducing stress on the T12/L1 area. Coordinates movement between hips and trunk so the lower back isn\'t overworking.',
+    gif: 'https://media1.giphy.com/media/3o7TKtsBMu4xzIV808/giphy.gif'
+  },
+  {
+    id: 'glute-bridge',
+    name: 'Glute bridge',
+    sets: 3, reps: '12–15 reps',
+    tag: 'physio',
+    aim: 'Activates and strengthens the glutes so they take more load during movement, reducing strain through the lower back and thoracolumbar junction.',
+    progression: 'When easy, raise on two legs and lower on one — or progress to single leg.',
+    gif: 'https://media.giphy.com/media/3oKIPwoeGErMmaI43S/giphy.gif'
+  },
+  {
+    id: 'open-book',
+    name: 'Open book',
+    sets: 2, reps: '10 each side',
+    tag: 'physio',
+    aim: 'Improves thoracic rotation, particularly to the right. Reduces compensatory movement and stiffness through the lower back.',
+    gif: 'https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif'
+  },
+  {
+    id: 'clamshell',
+    name: 'Banded clamshells',
+    sets: 3, reps: '15 each side',
+    tag: 'physio',
+    aim: 'Targets glute med and improves hip stability. Supports better pelvic control and reduces load going into the lower back.',
+    gif: 'https://media.giphy.com/media/1iTJ8ZRDBLS0fkmH/giphy.gif'
+  },
+  {
+    id: 'dead-bug',
+    name: 'Dead bug',
+    sets: 3, reps: '8–10 each side',
+    tag: 'physio',
+    aim: 'Builds anterior core strength and control, helping stabilise the spine and reduce unnecessary movement through the T12/L1 region.',
+    gif: 'https://media.giphy.com/media/26BRuo6sBeV6j2w5O/giphy.gif'
+  },
+  {
+    id: 'cat-cow',
+    name: 'Cat-cow',
+    sets: 2, reps: '10 slow cycles',
+    tag: 'bonus',
+    aim: 'Gentle spinal flexion and extension. Warms up the thoracolumbar junction, improves segmental mobility, and eases morning stiffness. Great to do first.',
+    gif: 'https://media.giphy.com/media/3oKIPsXoMSMlIXZTss/giphy.gif'
+  },
+  {
+    id: 'hip-flexor',
+    name: 'Hip flexor stretch',
+    sets: 2, reps: '30 sec each side',
+    tag: 'bonus',
+    aim: 'Releases tight hip flexors — a common driver of anterior pelvic tilt — which reduces compressive load through the lumbar spine.',
+    gif: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif'
+  },
+  {
+    id: 'childs-pose',
+    name: "Child's pose",
+    sets: 1, reps: '60 sec hold',
+    tag: 'bonus',
+    aim: 'Gentle decompression of the lumbar spine. Stretches the erectors and reduces tension through the lower back and hips. Good to finish with.',
+    gif: 'https://media.giphy.com/media/3oKIPavRPgJYaNI97O/giphy.gif'
+  }
+];
+
+// --- State ---
+const todayKey = new Date().toISOString().slice(0, 10);
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('backrehab_v2');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { sessions: {}, currentSession: null };
+}
+
+function saveState() {
+  try { localStorage.setItem('backrehab_v2', JSON.stringify(state)); } catch(e) {}
+}
+
+function getToday() {
+  if (!state.sessions[todayKey]) {
+    state.sessions[todayKey] = { completed: [], sets: {}, pain: null, date: todayKey };
+  }
+  return state.sessions[todayKey];
+}
+
+function isCompleted(id) { return getToday().completed.includes(id); }
+function getSets(id) { return getToday().sets[id] || []; }
+
+// --- Week strip ---
+function buildWeekStrip() {
+  const strip = document.getElementById('weekStrip');
+  const today = new Date();
+  const days = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  for (let i = -3; i <= 3; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    const isToday = i === 0;
+    const sess = state.sessions[key];
+    const hasDone = sess && sess.completed.length > 0;
+    const pill = document.createElement('div');
+    pill.className = 'day-pill' + (isToday ? ' today' : '') + (hasDone && !isToday ? ' completed-day' : '');
+    pill.innerHTML = `<span class="day-num">${d.getDate()}</span><span class="day-name">${days[d.getDay()]}</span>${hasDone ? '<span class="day-dot"></span>' : ''}`;
+    strip.appendChild(pill);
+  }
+}
+
+// --- Cards ---
+function buildCard(ex) {
+  const done = isCompleted(ex.id);
+  const sets = getSets(ex.id);
+  const card = document.createElement('div');
+  card.className = 'ex-card' + (done ? ' done' : '');
+  card.id = 'card-' + ex.id;
+
+  const dotsHtml = Array.from({length: ex.sets}, (_, i) =>
+    `<div class="set-dot${sets.includes(i) ? ' tapped' : ''}" onclick="toggleSet('${ex.id}',${i},this)"></div>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="ex-header" onclick="toggleExpand('${ex.id}')">
+      <div class="check-ring">
+        <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+          <path d="M1 4.5L4.5 8L11 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ex-text">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-meta">${ex.sets} sets · ${ex.reps}</div>
+      </div>
+      <div class="ex-tag ${ex.tag}">${ex.tag}</div>
+      <svg class="chevron" id="chev-${ex.id}" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="ex-body" id="body-${ex.id}">
+      <div class="ex-inner">
+        <div class="gif-wrap">
+          <img src="${ex.gif}" alt="${ex.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="gif-fallback" style="display:none">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+              <circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z"/>
+            </svg>
+            <p>Video preview unavailable offline</p>
+          </div>
+        </div>
+        <div class="ex-aim">${ex.aim}</div>
+        ${ex.progression ? `<div class="ex-progression">${ex.progression}</div>` : ''}
+        <div class="sets-row">
+          <div class="sets-label">Sets done:</div>
+          <div class="set-dots">${dotsHtml}</div>
+        </div>
+        <button class="mark-btn" id="markbtn-${ex.id}" onclick="markDone('${ex.id}')">${done ? 'Completed ✓' : 'Mark as complete'}</button>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function toggleExpand(id) {
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  const open = body.classList.contains('open');
+  document.querySelectorAll('.ex-body.open').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.chevron.open').forEach(c => c.classList.remove('open'));
+  if (!open) { body.classList.add('open'); chev.classList.add('open'); }
+}
+
+function toggleSet(id, idx, el) {
+  const sess = getToday();
+  if (!sess.sets[id]) sess.sets[id] = [];
+  const pos = sess.sets[id].indexOf(idx);
+  if (pos > -1) { sess.sets[id].splice(pos, 1); el.classList.remove('tapped'); }
+  else { sess.sets[id].push(idx); el.classList.add('tapped'); }
+  saveState();
+}
+
+function markDone(id) {
+  const sess = getToday();
+  if (!sess.completed.includes(id)) sess.completed.push(id);
+  saveState();
+  const card = document.getElementById('card-' + id);
+  card.classList.add('done');
+  document.getElementById('markbtn-' + id).textContent = 'Completed ✓';
+  updateProgress();
+  updateStreak();
+}
+
+function updateProgress() {
+  const total = EXERCISES.length;
+  const done = getToday().completed.length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct + '%';
+  const physioDone = getToday().completed.filter(id => EXERCISES.find(e => e.id === id && e.tag === 'physio')).length;
+  if (physioDone === EXERCISES.filter(e => e.tag === 'physio').length) {
+    document.getElementById('completeBanner').classList.add('show');
+  }
+}
+
+// --- Pain scale ---
+function buildPainScale() {
+  const items = [['0–2','ok'],['3–4','ok'],['5–6','warn'],['7–8','bad'],['9–10','bad']];
+  const scale = document.getElementById('painScale');
+  const savedPain = getToday().pain;
+  items.forEach(([label, level], i) => {
+    const btn = document.createElement('button');
+    btn.className = 'pain-btn' + (savedPain === i ? ' sel-' + level : '');
+    btn.textContent = label;
+    btn.onclick = () => {
+      document.querySelectorAll('.pain-btn').forEach((b, j) => {
+        b.className = 'pain-btn' + (j === i ? ' sel-' + level : '');
+      });
+      const note = document.getElementById('painNote');
+      note.className = 'pain-note ' + level;
+      const msgs = {
+        ok: 'You\'re in the safe zone. Keep going — that\'s exactly where you want to be.',
+        warn: 'Borderline. Continue carefully and monitor. Don\'t push through sharpness.',
+        bad: 'Stop here and rest. Log this with your physio before your next session.'
+      };
+      note.textContent = msgs[level];
+      getToday().pain = i;
+      saveState();
+    };
+    scale.appendChild(btn);
+    if (savedPain === i) {
+      const note = document.getElementById('painNote');
+      note.className = 'pain-note ' + level;
+      const msgs = {
+        ok: 'You\'re in the safe zone. Keep going — that\'s exactly where you want to be.',
+        warn: 'Borderline. Continue carefully and monitor. Don\'t push through sharpness.',
+        bad: 'Stop here and rest. Log this with your physio before your next session.'
+      };
+      note.textContent = msgs[level];
+    }
+  });
+}
+
+// --- Session history ---
+function buildHistory() {
+  const list = document.getElementById('historyList');
+  const sessions = Object.values(state.sessions)
+    .filter(s => s.completed.length > 0)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 10);
+
+  if (!sessions.length) return;
+
+  list.innerHTML = '';
+  sessions.forEach(s => {
+    const d = new Date(s.date + 'T12:00:00');
+    const label = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const physioCount = s.completed.filter(id => EXERCISES.find(e => e.id === id && e.tag === 'physio')).length;
+    const painItems = [['0–2','ok'],['3–4','ok'],['5–6','warn'],['7–8','bad'],['9–10','bad']];
+    const painHtml = s.pain != null
+      ? `<span class="history-pain ${painItems[s.pain][1]}">${painItems[s.pain][0]}</span>`
+      : '';
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    row.innerHTML = `<span class="history-date">${label}</span><span class="history-detail">${physioCount}/5 physio</span>${painHtml}`;
+    list.appendChild(row);
+  });
+}
+
+// --- Streak ---
+function updateStreak() {
+  const keys = Object.keys(state.sessions).filter(k => state.sessions[k].completed.length >= 3).sort();
+  let streak = 0;
+  if (keys.length) {
+    const weeks = new Set(keys.map(k => { const d = new Date(k); const wk = new Date(d); wk.setDate(d.getDate() - d.getDay()); return wk.toISOString().slice(0,10); }));
+    streak = weeks.size;
+  }
+  document.getElementById('streakCount').textContent = streak;
+}
+
+// --- Init ---
+buildWeekStrip();
+buildPainScale();
+
+const physioList = document.getElementById('physioList');
+const bonusList = document.getElementById('bonusList');
+EXERCISES.forEach(ex => {
+  (ex.tag === 'physio' ? physioList : bonusList).appendChild(buildCard(ex));
+});
+
+updateProgress();
+updateStreak();
+buildHistory();
+</script>
+</body>
+</html>
